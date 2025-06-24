@@ -4,13 +4,14 @@ These tests verify that the client implementation strictly follows the
 CyberArk Central Credential Provider REST API specification.
 """
 
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 from cyberark_ccp import (
     CyberarkCCPClient,
-    QueryFormat,
     CyberarkCCPValidationError,
+    QueryFormat,
 )
 
 

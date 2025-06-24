@@ -1,7 +1,8 @@
 """Pytest configuration and fixtures for CyberArk CCP API client tests."""
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
 import requests
 
 from cyberark_ccp import CyberarkCCPClient
@@ -98,12 +99,12 @@ def invalid_characters():
 def api_error_codes():
     """Provide mapping of API error codes to expected exception types."""
     from cyberark_ccp import (
-        CyberarkCCPError,
-        CyberarkCCPValidationError,
+        CyberarkCCPAccountNotFoundError,
         CyberarkCCPAuthenticationError,
         CyberarkCCPAuthorizationError,
-        CyberarkCCPAccountNotFoundError,
         CyberarkCCPConnectionError,
+        CyberarkCCPError,
+        CyberarkCCPValidationError,
     )
 
     return {

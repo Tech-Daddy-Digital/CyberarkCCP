@@ -3,13 +3,13 @@
 import pytest
 
 from cyberark_ccp import (
-    CyberarkCCPError,
-    CyberarkCCPValidationError,
+    CyberarkCCPAccountNotFoundError,
     CyberarkCCPAuthenticationError,
     CyberarkCCPAuthorizationError,
-    CyberarkCCPAccountNotFoundError,
     CyberarkCCPConnectionError,
+    CyberarkCCPError,
     CyberarkCCPTimeoutError,
+    CyberarkCCPValidationError,
 )
 
 

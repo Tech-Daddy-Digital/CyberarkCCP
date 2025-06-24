@@ -1,18 +1,19 @@
 """Integration tests for CyberArk CCP API client."""
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 import requests
 
 from cyberark_ccp import (
-    CyberarkCCPClient,
-    QueryFormat,
-    CyberarkCCPError,
-    CyberarkCCPValidationError,
-    CyberarkCCPAuthenticationError,
     CyberarkCCPAccountNotFoundError,
+    CyberarkCCPAuthenticationError,
+    CyberarkCCPClient,
     CyberarkCCPConnectionError,
+    CyberarkCCPError,
     CyberarkCCPTimeoutError,
+    CyberarkCCPValidationError,
+    QueryFormat,
 )
 
 
