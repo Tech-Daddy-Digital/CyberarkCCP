@@ -109,7 +109,7 @@ class CyberarkCCPClient:
             connection_timeout=connection_timeout,
             fail_request_on_password_change=fail_request_on_password_change,
         )
-        return account_data.get("Content", "")
+        return str(account_data.get("Content", ""))
 
     def get_account(
         self,
@@ -196,10 +196,12 @@ class CyberarkCCPClient:
                 timeout=self.timeout,
             )
             response.raise_for_status()
-            return response.json()
+            return response.json()  # type: ignore[no-any-return]
 
         except requests.exceptions.HTTPError as http_err:
             self._handle_http_error(response, http_err)
+            # This line should never be reached as _handle_http_error always raises an exception
+            raise CyberarkCCPError("Unexpected error in HTTP error handling")
         except requests.exceptions.Timeout:
             raise CyberarkCCPTimeoutError(f"Request timed out after {self.timeout} seconds") from None
         except requests.exceptions.ConnectionError as conn_err:
@@ -408,6 +410,6 @@ class CyberarkCCPClient:
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(self, exc_type: Optional[type], exc_val: Optional[BaseException], exc_tb: Optional[Any]) -> None:
         """Context manager exit."""
         self.close()
