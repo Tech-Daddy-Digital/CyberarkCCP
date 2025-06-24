@@ -45,7 +45,7 @@ class TestExceptionHierarchy:
             # Test with message
             exc = exc_class("Test message")
             assert str(exc) == "Test message"
-            
+
             # Test without message
             exc = exc_class()
             assert isinstance(exc, exc_class)
@@ -67,7 +67,7 @@ class TestExceptionHierarchy:
     def test_exception_chaining(self):
         """Test exception chaining with 'from' clause."""
         original_error = ValueError("Original error")
-        
+
         with pytest.raises(CyberarkCCPError) as exc_info:
             try:
                 raise original_error
@@ -79,7 +79,7 @@ class TestExceptionHierarchy:
     def test_exception_messages(self):
         """Test that exception messages are properly handled."""
         message = "Detailed error message"
-        
+
         exceptions = [
             CyberarkCCPError(message),
             CyberarkCCPValidationError(message),
@@ -102,10 +102,10 @@ class TestExceptionUseCases:
         # These represent actual validation scenarios
         validation_scenarios = [
             "Invalid query format",
-            "Request message content is invalid", 
+            "Request message content is invalid",
             "Invalid characters in User Name",
             "Invalid request. The AppID parameter is required",
-            "Parameter 'test' contains invalid character '+'"
+            "Parameter 'test' contains invalid character '+'",
         ]
 
         for message in validation_scenarios:
@@ -114,11 +114,11 @@ class TestExceptionUseCases:
 
     def test_authentication_error_scenarios(self):
         """Test scenarios where CyberarkCCPAuthenticationError should be used."""
-        # These represent actual authentication scenarios  
+        # These represent actual authentication scenarios
         auth_scenarios = [
             "App failed on authentication check",
             "Authentication failed (APPAP306E)",
-            "Certificate authentication failed"
+            "Certificate authentication failed",
         ]
 
         for message in auth_scenarios:
@@ -128,11 +128,7 @@ class TestExceptionUseCases:
     def test_authorization_error_scenarios(self):
         """Test scenarios where CyberarkCCPAuthorizationError should be used."""
         # These represent actual authorization scenarios
-        auth_scenarios = [
-            "User not defined",
-            "ITATS982E User app11 is not defined",
-            "Insufficient permissions"
-        ]
+        auth_scenarios = ["User not defined", "ITATS982E User app11 is not defined", "Insufficient permissions"]
 
         for message in auth_scenarios:
             with pytest.raises(CyberarkCCPAuthorizationError):
@@ -141,12 +137,7 @@ class TestExceptionUseCases:
     def test_account_not_found_error_scenarios(self):
         """Test scenarios where CyberarkCCPAccountNotFoundError should be used."""
         # These represent actual account not found scenarios
-        not_found_scenarios = [
-            "Too many objects",
-            "Safe not found", 
-            "Account not found",
-            "Resource not found"
-        ]
+        not_found_scenarios = ["Too many objects", "Safe not found", "Account not found", "Resource not found"]
 
         for message in not_found_scenarios:
             with pytest.raises(CyberarkCCPAccountNotFoundError):
@@ -158,7 +149,7 @@ class TestExceptionUseCases:
         connection_scenarios = [
             "Connection to the Vault has failed",
             "Connection error: HTTPSConnectionPool",
-            "Network unreachable"
+            "Network unreachable",
         ]
 
         for message in connection_scenarios:
@@ -168,11 +159,7 @@ class TestExceptionUseCases:
     def test_timeout_error_scenarios(self):
         """Test scenarios where CyberarkCCPTimeoutError should be used."""
         # These represent actual timeout scenarios
-        timeout_scenarios = [
-            "Request timed out after 30 seconds",
-            "Connection timeout",
-            "Read timeout"
-        ]
+        timeout_scenarios = ["Request timed out after 30 seconds", "Connection timeout", "Read timeout"]
 
         for message in timeout_scenarios:
             with pytest.raises(CyberarkCCPTimeoutError):
@@ -191,20 +178,17 @@ class TestExceptionUseCases:
             "APPAP081E": CyberarkCCPValidationError,
             "CASVL010E": CyberarkCCPValidationError,
             "AIMWS031E": CyberarkCCPValidationError,
-            
             # 403 errors
             "APPAP306E": CyberarkCCPAuthenticationError,
             "APPAP008E": CyberarkCCPAuthorizationError,
-            
             # 404 errors
             "APPAP004E": CyberarkCCPAccountNotFoundError,
-            
             # 500 errors
             "APPAP282E": CyberarkCCPError,
         }
 
         for error_code, expected_exception in error_mappings.items():
             message = f"Error with code {error_code}"
-            
+
             with pytest.raises(expected_exception):
                 raise expected_exception(message)

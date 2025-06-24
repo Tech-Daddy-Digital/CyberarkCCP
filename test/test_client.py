@@ -1,8 +1,7 @@
 """Comprehensive unit tests for CyberArk CCP API client."""
 
-import json
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import requests
 
 from cyberark_ccp import (
@@ -25,12 +24,7 @@ class TestCyberarkCCPClient:
         """Set up test fixtures."""
         self.base_url = "https://ccp.example.com"
         self.app_id = "TestApp"
-        self.client = CyberarkCCPClient(
-            base_url=self.base_url,
-            app_id=self.app_id,
-            verify=True,
-            timeout=30
-        )
+        self.client = CyberarkCCPClient(base_url=self.base_url, app_id=self.app_id, verify=True, timeout=30)
 
     def test_client_initialization(self):
         """Test client initialization with various parameters."""
@@ -48,7 +42,7 @@ class TestCyberarkCCPClient:
             app_id="MyApp",
             cert_path="/path/to/cert.p12",
             verify=False,
-            timeout=60
+            timeout=60,
         )
         assert client.base_url == "https://test.com"  # Trailing slash removed
         assert client.app_id == "MyApp"
@@ -58,23 +52,16 @@ class TestCyberarkCCPClient:
 
     def test_context_manager(self):
         """Test client as context manager."""
-        with patch.object(self.client, 'close') as mock_close:
+        with patch.object(self.client, "close") as mock_close:
             with self.client as client:
                 assert client is self.client
             mock_close.assert_called_once()
 
     def test_build_params_basic(self):
         """Test parameter building with basic parameters."""
-        params = self.client._build_params(
-            safe="TestSafe",
-            password_object="TestObject"
-        )
-        
-        expected = {
-            "AppID": "TestApp",
-            "Safe": "TestSafe",
-            "Object": "TestObject"
-        }
+        params = self.client._build_params(safe="TestSafe", password_object="TestObject")
+
+        expected = {"AppID": "TestApp", "Safe": "TestSafe", "Object": "TestObject"}
         assert params == expected
 
     def test_build_params_all_standard_parameters(self):
@@ -87,9 +74,9 @@ class TestCyberarkCCPClient:
             address="test.example.com",
             database="TestDB",
             policy_id="TestPolicy",
-            reason="TestReason"
+            reason="TestReason",
         )
-        
+
         expected = {
             "AppID": "TestApp",
             "Safe": "TestSafe",
@@ -99,7 +86,7 @@ class TestCyberarkCCPClient:
             "Address": "test.example.com",
             "Database": "TestDB",
             "PolicyID": "TestPolicy",
-            "Reason": "TestReason"
+            "Reason": "TestReason",
         }
         assert params == expected
 
@@ -110,14 +97,14 @@ class TestCyberarkCCPClient:
             query_format=QueryFormat.EXACT,
             safe="IgnoredSafe",  # Should be ignored
             password_object="IgnoredObject",  # Should be ignored
-            reason="TestReason"  # Should still be included
+            reason="TestReason",  # Should still be included
         )
-        
+
         expected = {
             "AppID": "TestApp",
             "Query": "Safe=TestSafe,Object=TestObject",
             "Query Format": "Exact",
-            "Reason": "TestReason"
+            "Reason": "TestReason",
         }
         assert params == expected
         # Verify ignored parameters are not present
@@ -126,59 +113,38 @@ class TestCyberarkCCPClient:
 
     def test_build_params_query_format_exact(self):
         """Test Query Format parameter with Exact value."""
-        params = self.client._build_params(
-            query="Safe=TestSafe",
-            query_format=QueryFormat.EXACT
-        )
-        
+        params = self.client._build_params(query="Safe=TestSafe", query_format=QueryFormat.EXACT)
+
         assert params["Query Format"] == "Exact"
 
     def test_build_params_query_format_regexp(self):
         """Test Query Format parameter with Regexp value."""
-        params = self.client._build_params(
-            query="Safe=Test.*",
-            query_format=QueryFormat.REGEXP
-        )
-        
+        params = self.client._build_params(query="Safe=Test.*", query_format=QueryFormat.REGEXP)
+
         assert params["Query Format"] == "Regexp"
 
     def test_build_params_connection_timeout(self):
         """Test Connection Timeout parameter."""
-        params = self.client._build_params(
-            safe="TestSafe",
-            connection_timeout=60
-        )
-        
+        params = self.client._build_params(safe="TestSafe", connection_timeout=60)
+
         assert params["Connection Timeout"] == "60"
 
     def test_build_params_connection_timeout_validation(self):
         """Test Connection Timeout parameter validation."""
         with pytest.raises(CyberarkCCPValidationError, match="Connection timeout must be positive"):
-            self.client._build_params(
-                safe="TestSafe",
-                connection_timeout=0
-            )
+            self.client._build_params(safe="TestSafe", connection_timeout=0)
 
         with pytest.raises(CyberarkCCPValidationError, match="Connection timeout must be positive"):
-            self.client._build_params(
-                safe="TestSafe",
-                connection_timeout=-1
-            )
+            self.client._build_params(safe="TestSafe", connection_timeout=-1)
 
     def test_build_params_fail_request_on_password_change(self):
         """Test FailRequestOnPasswordChange parameter."""
         # Test True value
-        params = self.client._build_params(
-            safe="TestSafe",
-            fail_request_on_password_change=True
-        )
+        params = self.client._build_params(safe="TestSafe", fail_request_on_password_change=True)
         assert params["FailRequestOnPasswordChange"] == "true"
 
         # Test False value
-        params = self.client._build_params(
-            safe="TestSafe",
-            fail_request_on_password_change=False
-        )
+        params = self.client._build_params(safe="TestSafe", fail_request_on_password_change=False)
         assert params["FailRequestOnPasswordChange"] == "false"
 
     def test_validate_url_value_valid(self):
@@ -192,11 +158,11 @@ class TestCyberarkCCPClient:
     def test_validate_url_value_invalid_characters(self):
         """Test URL value validation with invalid characters per API spec."""
         invalid_chars = ["+", "&", "%", ";"]
-        
+
         for char in invalid_chars:
             with pytest.raises(CyberarkCCPValidationError) as exc_info:
                 self.client._validate_url_value(f"test{char}value", "TestParam")
-            
+
             assert f"invalid character '{char}'" in str(exc_info.value)
             assert "are not supported" in str(exc_info.value)
 
@@ -204,7 +170,7 @@ class TestCyberarkCCPClient:
         """Test URL value validation with spaces."""
         with pytest.raises(CyberarkCCPValidationError) as exc_info:
             self.client._validate_url_value("test value", "TestParam")
-        
+
         assert "contains spaces" in str(exc_info.value)
         assert "not allowed in URLs" in str(exc_info.value)
 
@@ -212,10 +178,10 @@ class TestCyberarkCCPClient:
         """Test that AppID and at least one other parameter is required per API spec."""
         with pytest.raises(CyberarkCCPValidationError) as exc_info:
             self.client.get_account()
-        
+
         assert "AppID and at least one other parameter" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_successful_request(self, mock_get):
         """Test successful API request."""
         # Mock successful response
@@ -226,7 +192,7 @@ class TestCyberarkCCPClient:
             "UserName": "test-user",
             "Address": "test.example.com",
             "Database": "test-db",
-            "PasswordChangeInProcess": False
+            "PasswordChangeInProcess": False,
         }
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
@@ -236,12 +202,12 @@ class TestCyberarkCCPClient:
         # Verify request was made correctly
         mock_get.assert_called_once()
         call_args = mock_get.call_args
-        
-        assert call_args[1]['params']['AppID'] == "TestApp"
-        assert call_args[1]['params']['Safe'] == "TestSafe"
-        assert call_args[1]['verify'] is True
-        assert call_args[1]['timeout'] == 30
-        
+
+        assert call_args[1]["params"]["AppID"] == "TestApp"
+        assert call_args[1]["params"]["Safe"] == "TestSafe"
+        assert call_args[1]["verify"] is True
+        assert call_args[1]["timeout"] == 30
+
         # Verify response
         assert result["Content"] == "test-password"
         assert result["UserName"] == "test-user"
@@ -249,29 +215,22 @@ class TestCyberarkCCPClient:
         assert result["Database"] == "test-db"
         assert result["PasswordChangeInProcess"] is False
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_get_password_method(self, mock_get):
         """Test get_password method returns only Content field."""
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {
-            "Content": "test-password",
-            "UserName": "test-user"
-        }
+        mock_response.json.return_value = {"Content": "test-password", "UserName": "test-user"}
         mock_response.raise_for_status.return_value = None
         mock_get.return_value = mock_response
 
         password = self.client.get_password(safe="TestSafe")
         assert password == "test-password"
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_certificate_authentication(self, mock_get):
         """Test certificate-based authentication."""
-        client = CyberarkCCPClient(
-            base_url="https://test.com",
-            app_id="TestApp",
-            cert_path="/path/to/cert.p12"
-        )
+        client = CyberarkCCPClient(base_url="https://test.com", app_id="TestApp", cert_path="/path/to/cert.p12")
 
         mock_response = Mock()
         mock_response.status_code = 200
@@ -283,7 +242,7 @@ class TestCyberarkCCPClient:
 
         # Verify cert parameter was passed
         call_args = mock_get.call_args
-        assert call_args[1]['cert'] == "/path/to/cert.p12"
+        assert call_args[1]["cert"] == "/path/to/cert.p12"
 
 
 class TestErrorHandling:
@@ -297,210 +256,211 @@ class TestErrorHandling:
         """Create a mock error response."""
         mock_response = Mock()
         mock_response.status_code = status_code
-        
+
         if error_code:
-            mock_response.json.return_value = {
-                "ErrorCode": error_code,
-                "ErrorMessage": error_message
-            }
+            mock_response.json.return_value = {"ErrorCode": error_code, "ErrorMessage": error_message}
         else:
             mock_response.json.side_effect = ValueError("Not JSON")
             mock_response.text = f"HTTP {status_code} Error"
-        
+
         mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError()
         return mock_response
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_400_error_aimws030e_invalid_query_format(self, mock_get):
         """Test 400 error with AIMWS030E (Invalid query format)."""
         mock_get.return_value = self.create_mock_error_response(400, "AIMWS030E", "Invalid query format")
 
         with pytest.raises(CyberarkCCPValidationError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Invalid query format (AIMWS030E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_400_error_appap227e_too_many_objects(self, mock_get):
         """Test 400 error with APPAP227E (Too many objects)."""
         mock_get.return_value = self.create_mock_error_response(400, "APPAP227E", "Too many objects")
 
         with pytest.raises(CyberarkCCPAccountNotFoundError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Too many objects (APPAP227E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_400_error_appap228e_too_many_objects(self, mock_get):
         """Test 400 error with APPAP228E (Too many objects)."""
         mock_get.return_value = self.create_mock_error_response(400, "APPAP228E", "Too many objects")
 
         with pytest.raises(CyberarkCCPAccountNotFoundError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Too many objects (APPAP228E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_400_error_appap229e_too_many_objects(self, mock_get):
         """Test 400 error with APPAP229E (Too many objects)."""
         mock_get.return_value = self.create_mock_error_response(400, "APPAP229E", "Too many objects")
 
         with pytest.raises(CyberarkCCPAccountNotFoundError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Too many objects (APPAP229E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_400_error_appap007e_connection_to_vault_failed(self, mock_get):
         """Test 400 error with APPAP007E (Connection to Vault failed)."""
         mock_get.return_value = self.create_mock_error_response(400, "APPAP007E", "Connection to the Vault has failed")
 
         with pytest.raises(CyberarkCCPConnectionError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Connection to Vault failed (APPAP007E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_400_error_appap081e_invalid_request_content(self, mock_get):
         """Test 400 error with APPAP081E (Invalid request message content)."""
         mock_get.return_value = self.create_mock_error_response(400, "APPAP081E", "Request message content is invalid")
 
         with pytest.raises(CyberarkCCPValidationError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Request validation error (APPAP081E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_400_error_casvl010e_invalid_characters(self, mock_get):
         """Test 400 error with CASVL010E (Invalid characters in User Name)."""
         mock_get.return_value = self.create_mock_error_response(400, "CASVL010E", "Invalid characters in User Name")
 
         with pytest.raises(CyberarkCCPValidationError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Request validation error (CASVL010E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_400_error_aimws031e_appid_required(self, mock_get):
         """Test 400 error with AIMWS031E (AppID parameter required)."""
-        mock_get.return_value = self.create_mock_error_response(400, "AIMWS031E", "Invalid request. The AppID parameter is required")
+        mock_get.return_value = self.create_mock_error_response(
+            400, "AIMWS031E", "Invalid request. The AppID parameter is required"
+        )
 
         with pytest.raises(CyberarkCCPValidationError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Request validation error (AIMWS031E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_403_error_appap306e_authentication_failed(self, mock_get):
         """Test 403 error with APPAP306E (App failed on authentication check)."""
         mock_get.return_value = self.create_mock_error_response(403, "APPAP306E", "App failed on authentication check")
 
         with pytest.raises(CyberarkCCPAuthenticationError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Authentication failed (APPAP306E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_403_error_appap008e_user_not_defined(self, mock_get):
         """Test 403 error with APPAP008E (User not defined)."""
         mock_get.return_value = self.create_mock_error_response(403, "APPAP008E", "ITATS982E User app11 is not defined")
 
         with pytest.raises(CyberarkCCPAuthorizationError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "User not defined (APPAP008E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_404_error_appap004e_safe_not_found(self, mock_get):
         """Test 404 error with APPAP004E (Safe not found)."""
         mock_get.return_value = self.create_mock_error_response(404, "APPAP004E", "Safe not found")
 
         with pytest.raises(CyberarkCCPAccountNotFoundError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Safe not found (APPAP004E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_500_error_appap282e_password_change_in_progress(self, mock_get):
         """Test 500 error with APPAP282E (Password change in progress)."""
-        mock_get.return_value = self.create_mock_error_response(500, "APPAP282E", "Password [password] is currently being changed by the CPM")
+        mock_get.return_value = self.create_mock_error_response(
+            500, "APPAP282E", "Password [password] is currently being changed by the CPM"
+        )
 
         with pytest.raises(CyberarkCCPError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Password change in progress (APPAP282E)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_400_error_no_json_response(self, mock_get):
         """Test 400 error with non-JSON response."""
         mock_get.return_value = self.create_mock_error_response(400)
 
         with pytest.raises(CyberarkCCPValidationError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Bad Request (HTTP 400)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_403_error_no_json_response(self, mock_get):
         """Test 403 error with non-JSON response."""
         mock_get.return_value = self.create_mock_error_response(403)
 
         with pytest.raises(CyberarkCCPAuthenticationError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Forbidden (HTTP 403)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_404_error_no_json_response(self, mock_get):
         """Test 404 error with non-JSON response."""
         mock_get.return_value = self.create_mock_error_response(404)
 
         with pytest.raises(CyberarkCCPAccountNotFoundError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Not Found (HTTP 404)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_500_error_no_json_response(self, mock_get):
         """Test 500 error with non-JSON response."""
         mock_get.return_value = self.create_mock_error_response(500)
 
         with pytest.raises(CyberarkCCPError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Internal Server Error (HTTP 500)" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_timeout_error(self, mock_get):
         """Test timeout error handling."""
         mock_get.side_effect = requests.exceptions.Timeout()
 
         with pytest.raises(CyberarkCCPTimeoutError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Request timed out after 30 seconds" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_connection_error(self, mock_get):
         """Test connection error handling."""
         mock_get.side_effect = requests.exceptions.ConnectionError("Connection failed")
 
         with pytest.raises(CyberarkCCPConnectionError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Connection error" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_generic_request_error(self, mock_get):
         """Test generic request error handling."""
         mock_get.side_effect = requests.exceptions.RequestException("Generic error")
 
         with pytest.raises(CyberarkCCPError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Request failed" in str(exc_info.value)
 
-    @patch('cyberark_ccp.client.requests.Session.get')
+    @patch("cyberark_ccp.client.requests.Session.get")
     def test_invalid_json_response(self, mock_get):
         """Test invalid JSON response handling."""
         mock_response = Mock()
@@ -511,7 +471,7 @@ class TestErrorHandling:
 
         with pytest.raises(CyberarkCCPError) as exc_info:
             self.client.get_account(safe="TestSafe")
-        
+
         assert "Invalid JSON response from server" in str(exc_info.value)
 
 
@@ -526,19 +486,13 @@ class TestQueryFormat:
     def test_query_format_usage(self):
         """Test QueryFormat enum usage in client."""
         client = CyberarkCCPClient("https://test.com", "TestApp")
-        
+
         # Test with EXACT
-        params = client._build_params(
-            query="Safe=Test",
-            query_format=QueryFormat.EXACT
-        )
+        params = client._build_params(query="Safe=Test", query_format=QueryFormat.EXACT)
         assert params["Query Format"] == "Exact"
 
         # Test with REGEXP
-        params = client._build_params(
-            query="Safe=Test.*",
-            query_format=QueryFormat.REGEXP
-        )
+        params = client._build_params(query="Safe=Test.*", query_format=QueryFormat.REGEXP)
         assert params["Query Format"] == "Regexp"
 
 
@@ -551,7 +505,7 @@ class TestAPISpecificationCompliance:
 
     def test_url_construction(self):
         """Test URL construction matches API specification."""
-        with patch('cyberark_ccp.client.requests.Session.get') as mock_get:
+        with patch("cyberark_ccp.client.requests.Session.get") as mock_get:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"Content": "test"}
@@ -567,7 +521,7 @@ class TestAPISpecificationCompliance:
 
     def test_http_method_and_version(self):
         """Test HTTP method is GET as per specification."""
-        with patch('cyberark_ccp.client.requests.Session.get') as mock_get:
+        with patch("cyberark_ccp.client.requests.Session.get") as mock_get:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"Content": "test"}
@@ -583,7 +537,7 @@ class TestAPISpecificationCompliance:
         """Test that we expect application/json content type."""
         # The client expects JSON responses, which is tested through json() calls
         # This is implicitly tested in other tests, but we can verify the expectation
-        with patch('cyberark_ccp.client.requests.Session.get') as mock_get:
+        with patch("cyberark_ccp.client.requests.Session.get") as mock_get:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"Content": "test"}
@@ -591,7 +545,7 @@ class TestAPISpecificationCompliance:
             mock_get.return_value = mock_response
 
             result = self.client.get_account(safe="TestSafe")
-            
+
             # Verify we successfully parse JSON response
             assert isinstance(result, dict)
             mock_response.json.assert_called_once()
@@ -601,7 +555,7 @@ class TestAPISpecificationCompliance:
         # Test standard parameters (without Query to avoid override)
         params = self.client._build_params(
             safe="Safe",
-            folder="Folder", 
+            folder="Folder",
             password_object="Object",
             username="UserName",
             address="Address",
@@ -609,7 +563,7 @@ class TestAPISpecificationCompliance:
             policy_id="PolicyID",
             reason="Reason",
             connection_timeout=60,
-            fail_request_on_password_change=True
+            fail_request_on_password_change=True,
         )
 
         # Verify exact parameter names from specification
@@ -626,26 +580,22 @@ class TestAPISpecificationCompliance:
         assert "FailRequestOnPasswordChange" in params
 
         # Test Query parameters separately (since Query overrides others)
-        query_params = self.client._build_params(
-            query="TestQuery",
-            query_format=QueryFormat.EXACT,
-            reason="TestReason"
-        )
+        query_params = self.client._build_params(query="TestQuery", query_format=QueryFormat.EXACT, reason="TestReason")
         assert "Query" in query_params
         assert "Query Format" in query_params  # Note: with space as per spec
 
     def test_response_structure_compliance(self):
         """Test response structure matches API specification."""
-        with patch('cyberark_ccp.client.requests.Session.get') as mock_get:
+        with patch("cyberark_ccp.client.requests.Session.get") as mock_get:
             # Mock response matching API specification
             api_response = {
                 "Content": "test-password",
-                "UserName": "test-user", 
+                "UserName": "test-user",
                 "Address": "test.example.com",
                 "Database": "test-db",
-                "PasswordChangeInProcess": False
+                "PasswordChangeInProcess": False,
             }
-            
+
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = api_response
@@ -672,7 +622,7 @@ class TestAPISpecificationCompliance:
         """Test character restrictions match API specification exactly."""
         # Test all restricted characters from specification: +, &, %, ;
         restricted_chars = ["+", "&", "%", ";"]
-        
+
         for char in restricted_chars:
             with pytest.raises(CyberarkCCPValidationError):
                 self.client._validate_url_value(f"test{char}value", "TestParam")
@@ -696,7 +646,7 @@ class TestAPISpecificationCompliance:
             {"address": "TestAddress"},
             {"database": "TestDB"},
             {"policy_id": "TestPolicy"},
-            {"query": "TestQuery"}
+            {"query": "TestQuery"},
         ]
 
         for combo in valid_combinations:
@@ -718,7 +668,7 @@ class TestAPISpecificationCompliance:
             username="IgnoredUser",
             address="IgnoredAddress",
             database="IgnoredDB",
-            policy_id="IgnoredPolicy"
+            policy_id="IgnoredPolicy",
         )
 
         # Only Query should be present, others should be ignored

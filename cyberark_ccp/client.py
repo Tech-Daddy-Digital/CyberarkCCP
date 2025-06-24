@@ -167,9 +167,7 @@ class CyberarkCCPClient:
             and not database
             and not policy_id
         ):
-            raise CyberarkCCPValidationError(
-                "The query must contain the AppID and at least one other parameter"
-            )
+            raise CyberarkCCPValidationError("The query must contain the AppID and at least one other parameter")
 
         params = self._build_params(
             account=account,
@@ -203,13 +201,9 @@ class CyberarkCCPClient:
         except requests.exceptions.HTTPError as http_err:
             self._handle_http_error(response, http_err)
         except requests.exceptions.Timeout:
-            raise CyberarkCCPTimeoutError(
-                f"Request timed out after {self.timeout} seconds"
-            ) from None
+            raise CyberarkCCPTimeoutError(f"Request timed out after {self.timeout} seconds") from None
         except requests.exceptions.ConnectionError as conn_err:
-            raise CyberarkCCPConnectionError(
-                f"Connection error: {str(conn_err)}"
-            ) from conn_err
+            raise CyberarkCCPConnectionError(f"Connection error: {str(conn_err)}") from conn_err
         except requests.exceptions.RequestException as req_err:
             raise CyberarkCCPError(f"Request failed: {str(req_err)}") from req_err
         except ValueError as json_err:
@@ -293,9 +287,7 @@ class CyberarkCCPClient:
             params["Connection Timeout"] = str(connection_timeout)
 
         if fail_request_on_password_change is not None:
-            params["FailRequestOnPasswordChange"] = str(
-                fail_request_on_password_change
-            ).lower()
+            params["FailRequestOnPasswordChange"] = str(fail_request_on_password_change).lower()
 
         return params
 
@@ -320,13 +312,9 @@ class CyberarkCCPClient:
 
         # Check for spaces (not allowed in URLs per specification)
         if " " in value:
-            raise CyberarkCCPValidationError(
-                f"Parameter '{param_name}' contains spaces which are not allowed in URLs"
-            )
+            raise CyberarkCCPValidationError(f"Parameter '{param_name}' contains spaces which are not allowed in URLs")
 
-    def _handle_http_error(
-        self, response: requests.Response, http_err: requests.exceptions.HTTPError
-    ) -> None:
+    def _handle_http_error(self, response: requests.Response, http_err: requests.exceptions.HTTPError) -> None:
         """Handle HTTP errors from the CCP API according to official specification.
 
         Args:
@@ -362,9 +350,7 @@ class CyberarkCCPClient:
                         f"Request validation error ({error_code}): {error_message}"
                     ) from http_err
                 else:
-                    raise CyberarkCCPError(
-                        f"Bad Request ({error_code}): {error_message}"
-                    ) from http_err
+                    raise CyberarkCCPError(f"Bad Request ({error_code}): {error_message}") from http_err
 
             elif status_code == 403:  # Forbidden
                 if error_code in ["APPAP306E"]:
@@ -392,43 +378,27 @@ class CyberarkCCPClient:
 
             elif status_code == 500:  # Internal Server Error
                 if error_code in ["APPAP282E"]:
-                    raise CyberarkCCPError(
-                        f"Password change in progress ({error_code}): {error_message}"
-                    ) from http_err
+                    raise CyberarkCCPError(f"Password change in progress ({error_code}): {error_message}") from http_err
                 else:
-                    raise CyberarkCCPError(
-                        f"Internal server error ({error_code}): {error_message}"
-                    ) from http_err
+                    raise CyberarkCCPError(f"Internal server error ({error_code}): {error_message}") from http_err
 
             else:
-                raise CyberarkCCPError(
-                    f"CCP API error {status_code} ({error_code}): {error_message}"
-                ) from http_err
+                raise CyberarkCCPError(f"CCP API error {status_code} ({error_code}): {error_message}") from http_err
 
         except ValueError:
             # Response is not JSON - use status code for classification
             error_text = response.text or str(http_err)
 
             if status_code == 400:
-                raise CyberarkCCPValidationError(
-                    f"Bad Request (HTTP {status_code}): {error_text}"
-                ) from http_err
+                raise CyberarkCCPValidationError(f"Bad Request (HTTP {status_code}): {error_text}") from http_err
             elif status_code == 403:
-                raise CyberarkCCPAuthenticationError(
-                    f"Forbidden (HTTP {status_code}): {error_text}"
-                ) from http_err
+                raise CyberarkCCPAuthenticationError(f"Forbidden (HTTP {status_code}): {error_text}") from http_err
             elif status_code == 404:
-                raise CyberarkCCPAccountNotFoundError(
-                    f"Not Found (HTTP {status_code}): {error_text}"
-                ) from http_err
+                raise CyberarkCCPAccountNotFoundError(f"Not Found (HTTP {status_code}): {error_text}") from http_err
             elif status_code == 500:
-                raise CyberarkCCPError(
-                    f"Internal Server Error (HTTP {status_code}): {error_text}"
-                ) from http_err
+                raise CyberarkCCPError(f"Internal Server Error (HTTP {status_code}): {error_text}") from http_err
             else:
-                raise CyberarkCCPError(
-                    f"HTTP error {status_code}: {error_text}"
-                ) from http_err
+                raise CyberarkCCPError(f"HTTP error {status_code}: {error_text}") from http_err
 
     def close(self) -> None:
         """Close the HTTP session to free up resources."""

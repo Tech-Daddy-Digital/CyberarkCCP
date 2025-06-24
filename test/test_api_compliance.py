@@ -1,6 +1,6 @@
 """API specification compliance tests for CyberArk CCP API client.
 
-These tests verify that the client implementation strictly follows the 
+These tests verify that the client implementation strictly follows the
 CyberArk Central Credential Provider REST API specification.
 """
 
@@ -23,7 +23,7 @@ class TestAPISpecificationCompliance:
 
     def test_url_format_compliance(self):
         """Test URL format matches specification exactly."""
-        with patch('cyberark_ccp.client.requests.Session.get') as mock_get:
+        with patch("cyberark_ccp.client.requests.Session.get") as mock_get:
             # Mock successful response
             mock_get.return_value.status_code = 200
             mock_get.return_value.json.return_value = {"Content": "test"}
@@ -38,7 +38,7 @@ class TestAPISpecificationCompliance:
 
     def test_http_method_compliance(self):
         """Test that only GET method is used as per specification."""
-        with patch('cyberark_ccp.client.requests.Session.get') as mock_get:
+        with patch("cyberark_ccp.client.requests.Session.get") as mock_get:
             mock_get.return_value.status_code = 200
             mock_get.return_value.json.return_value = {"Content": "test"}
             mock_get.return_value.raise_for_status.return_value = None
@@ -54,14 +54,14 @@ class TestAPISpecificationCompliance:
         params = self.client._build_params(
             safe="TestSafe",
             folder="TestFolder",
-            password_object="TestObject", 
+            password_object="TestObject",
             username="TestUser",
             address="TestAddress",
             database="TestDatabase",
             policy_id="TestPolicy",
             reason="TestReason",
             connection_timeout=60,
-            fail_request_on_password_change=True
+            fail_request_on_password_change=True,
         )
 
         # Verify exact parameter names from specification
@@ -69,7 +69,7 @@ class TestAPISpecificationCompliance:
         assert "Safe" in params
         assert "Folder" in params
         assert "Object" in params  # Not "password_object"
-        assert "UserName" in params  # Not "username" 
+        assert "UserName" in params  # Not "username"
         assert "Address" in params
         assert "Database" in params
         assert "PolicyID" in params  # Not "policy_id"
@@ -78,10 +78,7 @@ class TestAPISpecificationCompliance:
         assert "FailRequestOnPasswordChange" in params
 
         # Test Query parameters separately (since Query overrides others)
-        query_params = self.client._build_params(
-            query="TestQuery",
-            query_format=QueryFormat.EXACT
-        )
+        query_params = self.client._build_params(query="TestQuery", query_format=QueryFormat.EXACT)
         assert "Query" in query_params
         assert "Query Format" in query_params  # Note: space in parameter name
 
@@ -100,17 +97,17 @@ class TestAPISpecificationCompliance:
 
     def test_query_parameter_overrides_compliance(self):
         """Test Query parameter behavior per specification."""
-        # Per specification: "When this method is specified, all other search criteria 
+        # Per specification: "When this method is specified, all other search criteria
         # (Safe/Folder/Object/UserName/Address/PolicyID/Database) are ignored"
         params = self.client._build_params(
             query="Safe=TestSafe",
             safe="IgnoredSafe",
-            folder="IgnoredFolder", 
+            folder="IgnoredFolder",
             password_object="IgnoredObject",
             username="IgnoredUser",
             address="IgnoredAddress",
             database="IgnoredDatabase",
-            policy_id="IgnoredPolicy"
+            policy_id="IgnoredPolicy",
         )
 
         # Only Query should be present, others should be ignored
@@ -130,16 +127,10 @@ class TestAPISpecificationCompliance:
         assert QueryFormat.REGEXP.value == "Regexp"
 
         # Test parameter usage
-        params = self.client._build_params(
-            query="Test", 
-            query_format=QueryFormat.EXACT
-        )
+        params = self.client._build_params(query="Test", query_format=QueryFormat.EXACT)
         assert params["Query Format"] == "Exact"
 
-        params = self.client._build_params(
-            query="Test.*", 
-            query_format=QueryFormat.REGEXP
-        )
+        params = self.client._build_params(query="Test.*", query_format=QueryFormat.REGEXP)
         assert params["Query Format"] == "Regexp"
 
     def test_character_restrictions_compliance(self):
@@ -159,11 +150,8 @@ class TestAPISpecificationCompliance:
     def test_connection_timeout_type_compliance(self):
         """Test Connection Timeout parameter type per specification."""
         # Per specification: Type = Int, Default = 30
-        params = self.client._build_params(
-            safe="TestSafe",
-            connection_timeout=45
-        )
-        
+        params = self.client._build_params(safe="TestSafe", connection_timeout=45)
+
         # Should be converted to string for URL parameter
         assert params["Connection Timeout"] == "45"
         assert isinstance(params["Connection Timeout"], str)
@@ -171,33 +159,27 @@ class TestAPISpecificationCompliance:
     def test_fail_request_on_password_change_type_compliance(self):
         """Test FailRequestOnPasswordChange parameter type per specification."""
         # Per specification: Type = Boolean, Default = False
-        
+
         # Test True value
-        params = self.client._build_params(
-            safe="TestSafe",
-            fail_request_on_password_change=True
-        )
+        params = self.client._build_params(safe="TestSafe", fail_request_on_password_change=True)
         assert params["FailRequestOnPasswordChange"] == "true"
 
-        # Test False value  
-        params = self.client._build_params(
-            safe="TestSafe",
-            fail_request_on_password_change=False
-        )
+        # Test False value
+        params = self.client._build_params(safe="TestSafe", fail_request_on_password_change=False)
         assert params["FailRequestOnPasswordChange"] == "false"
 
     def test_response_structure_compliance(self):
         """Test expected response structure per specification."""
-        with patch('cyberark_ccp.client.requests.Session.get') as mock_get:
+        with patch("cyberark_ccp.client.requests.Session.get") as mock_get:
             # Mock response matching specification structure
             spec_response = {
                 "Content": "MyPassword",
                 "UserName": "myuser",
-                "Address": "myaddress", 
+                "Address": "myaddress",
                 "Database": "MyDatabase",
-                "PasswordChangeInProcess": False
+                "PasswordChangeInProcess": False,
             }
-            
+
             mock_get.return_value.status_code = 200
             mock_get.return_value.json.return_value = spec_response
             mock_get.return_value.raise_for_status.return_value = None
@@ -206,7 +188,7 @@ class TestAPISpecificationCompliance:
 
             # Verify all fields from specification are accessible
             assert "Content" in result
-            assert "UserName" in result  
+            assert "UserName" in result
             assert "Address" in result
             assert "Database" in result
             assert "PasswordChangeInProcess" in result
@@ -214,13 +196,13 @@ class TestAPISpecificationCompliance:
             # Verify field types per specification
             assert isinstance(result["Content"], str)
             assert isinstance(result["UserName"], str)
-            assert isinstance(result["Address"], str) 
+            assert isinstance(result["Address"], str)
             assert isinstance(result["Database"], str)
             assert isinstance(result["PasswordChangeInProcess"], bool)
 
     def test_http_status_code_compliance(self):
         """Test HTTP status code handling per specification."""
-        with patch('cyberark_ccp.client.requests.Session.get') as mock_get:
+        with patch("cyberark_ccp.client.requests.Session.get") as mock_get:
             # Test successful response (Status Code: 200)
             mock_get.return_value.status_code = 200
             mock_get.return_value.json.return_value = {"Content": "test"}
@@ -233,14 +215,14 @@ class TestAPISpecificationCompliance:
         """Test default values per specification."""
         # Per specification defaults:
         # - Folder: Root (only in PAM Self-Hosted)
-        # - Query Format: Exact  
+        # - Query Format: Exact
         # - Connection Timeout: 30
         # - FailRequestOnPasswordChange: False
 
         # These defaults are handled by the server, not the client
         # Client only sends non-None values
         params = self.client._build_params(safe="TestSafe")
-        
+
         # Default values should not be explicitly sent by client
         assert "Folder" not in params  # Only sent if explicitly provided
         assert "Query Format" not in params  # Only sent with Query
@@ -265,16 +247,13 @@ class TestAPISpecificationCompliance:
         """Test Folder parameter note compliance."""
         # Per specification: "Folders are only supported in PAM - Self-Hosted"
         # Client should still accept and send the parameter if provided
-        params = self.client._build_params(
-            safe="TestSafe",
-            folder="SubFolder"
-        )
+        params = self.client._build_params(safe="TestSafe", folder="SubFolder")
         assert params["Folder"] == "SubFolder"
 
     def test_content_type_expectation_compliance(self):
         """Test content type expectation per specification."""
         # Per specification: Content type = application/json
-        with patch('cyberark_ccp.client.requests.Session.get') as mock_get:
+        with patch("cyberark_ccp.client.requests.Session.get") as mock_get:
             mock_get.return_value.status_code = 200
             mock_get.return_value.json.return_value = {"Content": "test"}
             mock_get.return_value.raise_for_status.return_value = None
@@ -287,13 +266,13 @@ class TestAPISpecificationCompliance:
     def test_single_password_return_compliance(self):
         """Test that API returns single password per specification."""
         # Per specification: "This REST API returns a single password"
-        with patch('cyberark_ccp.client.requests.Session.get') as mock_get:
+        with patch("cyberark_ccp.client.requests.Session.get") as mock_get:
             mock_get.return_value.status_code = 200
             mock_get.return_value.json.return_value = {"Content": "SinglePassword"}
             mock_get.return_value.raise_for_status.return_value = None
 
             password = self.client.get_password(safe="TestSafe")
-            
+
             # Should return single password string
             assert isinstance(password, str)
             assert password == "SinglePassword"
