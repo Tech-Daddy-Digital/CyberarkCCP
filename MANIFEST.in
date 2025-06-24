@@ -1,0 +1,24 @@
+# Include package metadata and documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+include pyproject.toml
+include tox.ini
+
+# Include documentation
+recursive-include docs *.md *.py *.rst *.txt
+
+# Include type information
+include cyberark_ccp/py.typed
+
+# Exclude development and build files
+exclude .gitignore
+exclude .pre-commit-config.yaml
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *.egg-info
+recursive-exclude test *
+recursive-exclude .github *
+recursive-exclude .tox *
+recursive-exclude build *
+recursive-exclude dist *
