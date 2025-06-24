@@ -16,7 +16,7 @@ Official Python client library for the CyberArk Central Credential Provider (CCP
 - **Parameter Validation**: Built-in validation for all API parameters and character restrictions
 - **Type Safety**: Full type hints support for better IDE integration and code quality
 - **Production Ready**: Extensive test suite with 95+ tests covering all functionality
-- **Python 3.7+**: Compatible with Python 3.7 and above
+- **Python 3.8+**: Compatible with Python 3.8 and above
 
 ## Installation
 

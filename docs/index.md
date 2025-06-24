@@ -28,7 +28,6 @@ The CyberArk CCP Python client is a comprehensive library that provides secure a
 
 ### Supported Python Versions
 
-- Python 3.7+
 - Python 3.8+
 - Python 3.9+
 - Python 3.10+
