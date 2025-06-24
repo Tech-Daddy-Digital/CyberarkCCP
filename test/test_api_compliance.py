@@ -8,11 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from cyberark_ccp import (
-    CyberarkCCPClient,
-    CyberarkCCPValidationError,
-    QueryFormat,
-)
+from cyberark_ccp import CyberarkCCPClient, CyberarkCCPValidationError, QueryFormat
 
 
 class TestAPISpecificationCompliance:
