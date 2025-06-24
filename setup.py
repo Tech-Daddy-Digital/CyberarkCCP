@@ -40,7 +40,7 @@ setup(
         "Topic :: System :: Systems Administration :: Authentication/Directory",
     ],
     keywords="cyberark ccp credential provider security authentication",
-    python_requires=">=3.7",
+    python_requires=">=3.7.13",
     install_requires=[
         "requests>=2.25.0",
     ],
